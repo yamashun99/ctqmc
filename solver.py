@@ -27,7 +27,6 @@ class Solver():
         self.L = L
         self.ntot = ntot
         self.measure_interval = measure_interval
-        self.spins = np.random.choice([-1, 1], size=(self.L, self.M))
 
     def gen_cut(self, lam):
         n = 0
@@ -43,12 +42,15 @@ class Solver():
         return tauk, n
 
     def gen_conf(self,):
-        tauk, n = self.gen_cut(1.0, self.beta)
-        C = np.zeros((self.L, n, 2))
-        for i in range(n):
-            C[i, 0] = tauk[i]
-            C[i, 1] = np.random.choice([-1, 1])
-        return C, n
+        Cxtau = []
+        for ix in range(self.L):
+            tauk, n = self.gen_cut(1.0)
+            Ctau = np.zeros((n, 2))
+            for itau in range(n):
+                Ctau[itau, 0] = tauk[itau]
+                Ctau[itau, 1] = np.random.choice([-1, 1])
+            Cxtau.append(Ctau)
+        return Cxtau, n
 
     def remove_cut(self, C):
         C_romoved = np.zeros((len(C), 2))
