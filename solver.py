@@ -28,7 +28,7 @@ class Solver():
         self.ntot = ntot
         self.measure_interval = measure_interval
 
-    def gen_cut(self, lam):
+    def gen_uniformly_events(self, lam):
         n = 0
         d = np.exp(-self.beta*lam)
         p = d
@@ -44,7 +44,7 @@ class Solver():
     def gen_conf(self,):
         Cxtau = []
         for ix in range(self.L):
-            tauk, n = self.gen_cut(1.0)
+            tauk, n = self.gen_uniformly_events(self.Hx/2.0)
             Ctau = np.zeros((n, 2))
             for itau in range(n):
                 Ctau[itau, 0] = tauk[itau]
@@ -53,10 +53,13 @@ class Solver():
         return Cxtau, n
 
     def remove_cut(self, C):
-        C_romoved = np.zeros((len(C), 2))
-        n = 0
-        for i in range(len(C)):
-            if C[i, 1] * C[i-1, 1] < 0:
-                C_romoved[n] = C[i]
-                n += 1
-        return C_romoved[:n]
+        C_romoved = []
+        for Cx in C:
+            Cx_romoved = np.zeros((len(Cx), 2))
+            n = 0
+            for i in range(len(Cx)):
+                if Cx[i, 1] * Cx[i-1, 1] < 0:
+                    Cx_romoved[n] = Cx[i]
+                    n += 1
+            C_romoved.append(Cx_romoved[:n])
+        return C_romoved
