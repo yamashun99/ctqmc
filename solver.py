@@ -7,63 +7,6 @@ import random
 import collections
 
 
-def gen_uniformly_events(beta, lam):
-    n = 0
-    d = np.exp(-beta*lam)
-    p = d
-    zeta = np.random.rand()
-    while zeta > p:
-        n += 1
-        d *= beta*lam/n
-        p += d
-    tauk = beta*np.random.rand(n)
-    tauk.sort()
-    return tauk, n
-
-
-class cut():
-    def __init__(self, beta, L, Hx):
-        self.beta = beta
-        self.L = L
-        cuttau = collections.namedtuple('cuttau', ['t', 's', 'null'])
-        self.C = []
-        for ix in range(self.L):
-            tauk, n = gen_uniformly_events(self.beta, Hx/2.0)
-            if n > 0:
-                Ctau = [cuttau(tauk[itau], random.choice([-1, 1]), False)
-                        for itau in range(n)]
-            else:
-                Ctau = [cuttau(0, random.choice([-1, 1]), True)]
-            self.C.append(Ctau)
-
-    def __repr__(self,):
-        s = ''
-        for ix in range(self.L):
-            for itau in range(len(self.C[ix])):
-                s += str(self.C[ix][itau].t) + ' ' + \
-                    str(self.C[ix][itau].s) + '\n'
-        return s
-
-    def remove_cut(self,):
-        C_romoved = []
-        for Cx in self.C:
-            Cx_romoved = np.zeros((len(Cx), 2))
-            n = 0
-            for i in range(len(Cx)):
-                if Cx[i, 1] * Cx[i-1, 1] < 0:
-                    Cx_romoved[n] = Cx[i]
-                    n += 1
-            C_romoved.append(Cx_romoved[:n])
-        self.C = C_romoved
-
-    def __cut(Hx, L):
-        cut = []
-        for ix in range(L):
-            tauk, n = gen_uniformly_events(Hx/2.0)
-            cut.append(tauk)
-        return cut
-
-
 class Solver():
     def __init__(self, beta, J, Hx, L, ntot, measure_interval):
         self.beta = beta
