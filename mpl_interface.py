@@ -17,9 +17,16 @@ def spinplot(self, cuttaux):
                 cuttau[ltau - 1].t, cuttaux.beta, cuttaux.beta], color=colors[int(cuttau[ltau - 1].s)])
 
 def bondplot(self, bondtaux):
+    lx = len(bondtaux)
+    lw = 0.5
     for ix, bondtau in enumerate(bondtaux):
-        for tau in bondtau:
-            self.plot([ix+0.5, ix+1.5], [tau, tau], 'C0')
+        if ix < lx - 1:
+            for tau in bondtau:
+                self.plot([ix+1-lw/2, ix+1+lw/2], [tau, tau], 'C0')
+        if ix == lx - 1:
+            for tau in bondtau:
+                self.plot([ix+1-lw/2, ix+1], [tau, tau], 'C0')
+                self.plot([0, lw/2], [tau, tau], 'C0')
 
 def cutplot(self, cuttaux):
     for ix, cuttau in enumerate(cuttaux):

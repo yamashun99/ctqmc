@@ -5,7 +5,9 @@ import bisect
 import copy
 import random
 import collections
+import numba
 
+@numba.njit
 def gen_uniformly_events(beta, lam):
     n = 0
     d = np.exp(-beta*lam)
@@ -55,7 +57,10 @@ class Cuttau():
                 str(self.cuttau[itau].s) + '\n'
         return s
     
-    def _getitau(self, tau):
+    def __setitem__(self, position, value):
+        self.cuttau[position] = value
+    
+    def get_itau(self, tau):
         return bisect.bisect_left(self.cuttau, tau, key=lambda x: x.t) - 1
 
     def remove_cut(self,):
@@ -69,7 +74,7 @@ class Cuttau():
         self.cuttau = removed_cut
     
     def get_spin(self, tau):
-        itau = self._getitau(tau)
+        itau = self.get_itau(tau)
         return self.cuttau[itau].s
 
     def add_cut(self,):
@@ -79,6 +84,20 @@ class Cuttau():
             bisect.insort(self.cuttau, self.cut(tau, spin, False), key=lambda x: x.t)
         if self.cuttau[0].null == True and len(self.cuttau) > 1:
             self.cuttau.pop(0)
+
+    def measure_sz(self, ):
+        sz = 0
+        if len(self) > 1:
+            for itau in range(len(self)):
+                if itau == 0:
+                    sz += self[itau - 1].s*(self[itau +1].t)
+                elif itau == len(self) - 1:
+                    sz += self[itau].s*(self.beta - self[itau].t)
+                else:
+                    sz += self[itau].s*(self[itau+1].t - self[itau].t)
+        else:
+            sz += self[0].s*self.beta
+        return sz/self.beta
 
 class Cuttaux():
     def __init__(self, beta, Hx, L):
@@ -103,6 +122,13 @@ class Cuttaux():
     def add_cut(self, ):
         for ct in self.cuttaux:
             ct.add_cut()
+    
+    def measure_sz(self, ):
+        sz = 0
+        for ct in self.cuttaux:
+            sz += ct.measure_sz()
+        return sz/self.L
+    
 
 class Bondtaux():
     def __init__(self, cuttaux, J):
@@ -113,6 +139,7 @@ class Bondtaux():
         for ix in range(self.L):
             tauk, n = gen_uniformly_events(self.beta, self.J/2.0)
             self.bond.append(tauk)
+        self.remove_bond(cuttaux)
             
     def __getitem__(self, position):
         return self.bond[position]
@@ -124,6 +151,9 @@ class Bondtaux():
                 s += str(b) + '\n'
             s += '--\n'
         return s
+    
+    def __len__(self,):
+        return len(self.bond)
     
     def remove_bond(self, cuttaux):
         removed_bond = []
