@@ -1,13 +1,9 @@
-import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 import bisect
-import copy
 import random
 import collections
-import numba
 
-@numba.njit
 def gen_uniformly_events(beta, lam):
     n = 0
     d = np.exp(-beta*lam)
@@ -17,8 +13,7 @@ def gen_uniformly_events(beta, lam):
         n += 1
         d *= beta*lam/n
         p += d
-    tauk = [beta*random.random() for i in range(n)]
-    tauk.sort()
+    tauk = np.sort(np.random.rand(n)*beta)
     return tauk, n
 
 
